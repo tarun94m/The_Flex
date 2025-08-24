@@ -33,6 +33,8 @@ export class MemStorage implements IStorage {
     
     // Initialize with some sample properties
     this.initializeProperties();
+    // Initialize with sample reviews
+    this.initializeReviews();
   }
 
   private async initializeProperties() {
@@ -113,6 +115,185 @@ export class MemStorage implements IStorage {
 
     for (const property of sampleProperties) {
       await this.createProperty(property);
+    }
+  }
+
+  private async initializeReviews() {
+    const sampleReviews: InsertReview[] = [
+      {
+        id: "review-001",
+        type: "guest-to-host",
+        status: "published",
+        channel: "airbnb",
+        rating: 5,
+        publicReview: "Amazing apartment in the heart of Shoreditch! The location couldn't be better and the space was beautifully designed. Would definitely stay again.",
+        reviewCategory: [
+          { category: "cleanliness", rating: 5 },
+          { category: "communication", rating: 5 },
+          { category: "respect_house_rules", rating: 5 }
+        ],
+        submittedAt: new Date('2024-01-15'),
+        guestName: "Emily Johnson",
+        listingName: "Modern 2BR in Trendy Shoreditch - Apartment",
+        listingId: null,
+      },
+      {
+        id: "review-002",
+        type: "guest-to-host",
+        status: "published",
+        channel: "booking.com",
+        rating: 4,
+        publicReview: "Great location in Camden, close to everything. The apartment was clean and comfortable. Minor issues with WiFi but overall excellent stay.",
+        reviewCategory: [
+          { category: "cleanliness", rating: 4 },
+          { category: "communication", rating: 4 },
+          { category: "respect_house_rules", rating: 5 }
+        ],
+        submittedAt: new Date('2024-01-20'),
+        guestName: "Marcus Williams",
+        listingName: "Stylish Camden Apartment - Modern Living",
+        listingId: null,
+      },
+      {
+        id: "review-003",
+        type: "guest-to-host",
+        status: "published",
+        channel: "hostaway",
+        rating: 5,
+        publicReview: "Perfect studio in Notting Hill! Luxurious finishes and excellent amenities. The host was very responsive and helpful.",
+        reviewCategory: [
+          { category: "cleanliness", rating: 5 },
+          { category: "communication", rating: 5 },
+          { category: "respect_house_rules", rating: 4 }
+        ],
+        submittedAt: new Date('2024-01-25'),
+        guestName: "Sarah Chen",
+        listingName: "Luxury Notting Hill Studio - Premium",
+        listingId: null,
+      },
+      {
+        id: "review-004",
+        type: "guest-to-host",
+        status: "published",
+        channel: "airbnb",
+        rating: 3,
+        publicReview: "The flat was okay but had some cleanliness issues. Location in Covent Garden is fantastic for theater and shopping.",
+        reviewCategory: [
+          { category: "cleanliness", rating: 2 },
+          { category: "communication", rating: 4 },
+          { category: "respect_house_rules", rating: 4 }
+        ],
+        submittedAt: new Date('2024-02-01'),
+        guestName: "David Thompson",
+        listingName: "Cozy Covent Garden Flat - Theater District",
+        listingId: null,
+      },
+      {
+        id: "review-005",
+        type: "guest-to-host",
+        status: "published",
+        channel: "direct",
+        rating: 5,
+        publicReview: "Absolutely stunning house in Kensington! Spacious, beautifully decorated, and the garden was a wonderful bonus. Perfect for families.",
+        reviewCategory: [
+          { category: "cleanliness", rating: 5 },
+          { category: "communication", rating: 5 },
+          { category: "respect_house_rules", rating: 5 }
+        ],
+        submittedAt: new Date('2024-02-05'),
+        guestName: "Jennifer Davis",
+        listingName: "Spacious Kensington House - Family Home",
+        listingId: null,
+      },
+      {
+        id: "review-006",
+        type: "guest-to-host",
+        status: "published",
+        channel: "hostaway",
+        rating: 4,
+        publicReview: "Modern studio with incredible city views from Canary Wharf. Great for business travelers. Only downside was some noise from construction nearby.",
+        reviewCategory: [
+          { category: "cleanliness", rating: 5 },
+          { category: "communication", rating: 4 },
+          { category: "respect_house_rules", rating: 4 }
+        ],
+        submittedAt: new Date('2024-02-10'),
+        guestName: "Michael Rodriguez",
+        listingName: "Contemporary Canary Wharf Studio - Business",
+        listingId: null,
+      },
+      {
+        id: "review-007",
+        type: "guest-to-host",
+        status: "published",
+        channel: "booking.com",
+        rating: 5,
+        publicReview: "Beautiful Victorian townhouse near Greenwich Park. The historical features are charming and the location is peaceful yet well-connected.",
+        reviewCategory: [
+          { category: "cleanliness", rating: 5 },
+          { category: "communication", rating: 5 },
+          { category: "respect_house_rules", rating: 5 }
+        ],
+        submittedAt: new Date('2024-02-15'),
+        guestName: "Anna Martinez",
+        listingName: "Historic Greenwich Townhouse - Victorian Charm",
+        listingId: null,
+      },
+      {
+        id: "review-008",
+        type: "guest-to-host",
+        status: "published",
+        channel: "airbnb",
+        rating: 4,
+        publicReview: "Cool industrial loft in Hackney. Love the exposed brick and high ceilings. Area is trendy with lots of great restaurants and bars nearby.",
+        reviewCategory: [
+          { category: "cleanliness", rating: 4 },
+          { category: "communication", rating: 4 },
+          { category: "respect_house_rules", rating: 5 }
+        ],
+        submittedAt: new Date('2024-02-20'),
+        guestName: "James Wilson",
+        listingName: "Chic Hackney Loft - Industrial Style",
+        listingId: null,
+      },
+      {
+        id: "review-009",
+        type: "guest-to-host",
+        status: "published",
+        channel: "hostaway",
+        rating: 2,
+        publicReview: "Had high expectations but was disappointed. The apartment needs maintenance and cleaning was not up to standard.",
+        reviewCategory: [
+          { category: "cleanliness", rating: 2 },
+          { category: "communication", rating: 3 },
+          { category: "respect_house_rules", rating: 4 }
+        ],
+        submittedAt: new Date('2024-02-25'),
+        guestName: "Lisa Brown",
+        listingName: "Modern 2BR in Trendy Shoreditch - Apartment",
+        listingId: null,
+      },
+      {
+        id: "review-010",
+        type: "guest-to-host",
+        status: "published",
+        channel: "direct",
+        rating: 5,
+        publicReview: "Excellent stay in Camden! Everything was perfect - location, cleanliness, amenities. Highly recommend for anyone visiting London.",
+        reviewCategory: [
+          { category: "cleanliness", rating: 5 },
+          { category: "communication", rating: 5 },
+          { category: "respect_house_rules", rating: 5 }
+        ],
+        submittedAt: new Date('2024-03-01'),
+        guestName: "Robert Taylor",
+        listingName: "Stylish Camden Apartment - Modern Living",
+        listingId: null,
+      }
+    ];
+
+    for (const review of sampleReviews) {
+      await this.createReview(review);
     }
   }
 
@@ -230,7 +411,7 @@ export class MemStorage implements IStorage {
       ...review,
       rating: review.rating || null,
       publicReview: review.publicReview || null,
-      reviewCategory: Array.isArray(review.reviewCategory) ? review.reviewCategory : null,
+      reviewCategory: review.reviewCategory ? [...review.reviewCategory] : null,
       listingId: review.listingId || null,
       approved: false,
       rejected: false,
