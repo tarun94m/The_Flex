@@ -148,6 +148,9 @@ export class MemStorage implements IStorage {
   async createReview(review: InsertReview): Promise<Review> {
     const newReview: Review = {
       ...review,
+      rating: review.rating || null,
+      publicReview: review.publicReview || null,
+      reviewCategory: review.reviewCategory || null,
       approved: false,
       approvedAt: null,
       approvedBy: null,
@@ -206,6 +209,7 @@ export class MemStorage implements IStorage {
     const property: Property = {
       ...insertProperty,
       id,
+      description: insertProperty.description || null,
       averageRating: 0,
       reviewCount: 0,
     };

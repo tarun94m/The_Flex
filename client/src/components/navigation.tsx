@@ -16,8 +16,8 @@ export function Navigation() {
             </div>
             <nav className="hidden md:flex space-x-8">
               <Link href="/">
-                <a 
-                  className={`px-1 pb-4 text-sm font-medium ${
+                <span 
+                  className={`px-1 pb-4 text-sm font-medium cursor-pointer ${
                     location === "/" 
                       ? "text-primary border-b-2 border-primary" 
                       : "text-gray-500 hover:text-gray-700"
@@ -25,11 +25,11 @@ export function Navigation() {
                   data-testid="nav-dashboard"
                 >
                   Reviews Dashboard
-                </a>
+                </span>
               </Link>
               <Link href="/properties">
-                <a 
-                  className={`px-1 pb-4 text-sm ${
+                <span 
+                  className={`px-1 pb-4 text-sm cursor-pointer ${
                     location.startsWith("/properties") 
                       ? "text-primary border-b-2 border-primary" 
                       : "text-gray-500 hover:text-gray-700"
@@ -37,11 +37,11 @@ export function Navigation() {
                   data-testid="nav-properties"
                 >
                   Properties
-                </a>
+                </span>
               </Link>
-              <a href="#" className="text-gray-500 hover:text-gray-700 px-1 pb-4 text-sm">
+              <span className="text-gray-500 hover:text-gray-700 px-1 pb-4 text-sm cursor-pointer">
                 Analytics
-              </a>
+              </span>
             </nav>
           </div>
           <div className="flex items-center space-x-4">
