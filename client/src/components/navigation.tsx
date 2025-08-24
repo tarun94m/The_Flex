@@ -41,11 +41,11 @@ export function Navigation() {
               </Link>
             </nav>
           </div>
-          <div className="flex items-center space-x-4">
+          {/* <div className="flex items-center space-x-4">
             <Button variant="ghost" size="sm" data-testid="button-notifications">
               <Bell className="h-4 w-4 text-gray-400 hover:text-gray-500" />
             </Button>
-          </div>
+          </div> */}
         </div>
       </div>
     </nav>

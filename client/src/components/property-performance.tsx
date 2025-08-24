@@ -12,9 +12,10 @@ interface PropertyPerformanceProps {
 }
 
 export function PropertyPerformance({ properties, reviews, metrics }: PropertyPerformanceProps) {
+  
   const propertyStats = useMemo(() => {
     return properties.map(property => {
-      const propertyReviews = reviews.filter(r => r.listingId === property.id);
+      const propertyReviews = reviews.filter(r => r.listingName.includes(property.name));
       const approvedReviews = propertyReviews.filter(r => r.approved);
       const pendingReviews = propertyReviews.filter(r => !r.approved);
       

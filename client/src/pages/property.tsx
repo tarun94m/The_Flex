@@ -317,7 +317,7 @@ export default function PropertyPage() {
                           </TabsContent>
                           
                           <TabsContent value="google" className="space-y-6 mt-6">
-                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                            {/* <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
                               <div className="flex items-center space-x-2 text-yellow-800">
                                 <Globe className="h-5 w-5" />
                                 <span className="font-medium">Google Reviews Integration (Demo)</span>
@@ -325,7 +325,7 @@ export default function PropertyPage() {
                               <p className="text-yellow-700 text-sm mt-1">
                                 This demonstrates how Google Places API reviews would be integrated and displayed.
                               </p>
-                            </div>
+                            </div> */}
                             
                             {googleReviewsData.reviews.map((review: any, index: number) => (
                               <Card key={`google-${index}`} className="border-0 shadow-sm hover:shadow-md transition-shadow">
