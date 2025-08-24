@@ -6,8 +6,10 @@ import { KPICards } from "@/components/kpi-cards";
 import { ChartsSection } from "@/components/charts-section";
 import { ReviewsTable } from "@/components/reviews-table";
 import { ReviewModal } from "@/components/review-modal";
+import { PropertyPerformance } from "@/components/property-performance";
 import { Button } from "@/components/ui/button";
-import { RefreshCw } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { RefreshCw, BarChart3, Table, TrendingUp } from "lucide-react";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
 import type { ReviewFilters, Review } from "@shared/schema";
@@ -21,6 +23,11 @@ export default function Dashboard() {
   const [searchQuery, setSearchQuery] = useState("");
   const [selectedReview, setSelectedReview] = useState<Review | null>(null);
   const [isModalOpen, setIsModalOpen] = useState(false);
+  const [activeTab, setActiveTab] = useState("overview");
+  const [sortConfig, setSortConfig] = useState<{
+    key: string;
+    direction: 'asc' | 'desc';
+  } | null>(null);
 
   // Fetch reviews with filters
   const { data: reviews = [], isLoading: reviewsLoading, refetch: refetchReviews } = useQuery({
@@ -34,6 +41,13 @@ export default function Dashboard() {
     queryKey: ["/api/dashboard/metrics"],
     queryFn: () => api.getDashboardMetrics(),
     staleTime: 60000,
+  });
+
+  // Fetch properties for performance analysis
+  const { data: properties = [] } = useQuery({
+    queryKey: ["/api/properties"],
+    queryFn: () => api.getProperties(),
+    staleTime: 300000,
   });
 
   // Sync Hostaway reviews
@@ -71,6 +85,39 @@ export default function Dashboard() {
     setIsModalOpen(false);
     setSelectedReview(null);
   };
+
+  const handleSort = (key: string) => {
+    let direction: 'asc' | 'desc' = 'desc';
+    if (sortConfig && sortConfig.key === key && sortConfig.direction === 'desc') {
+      direction = 'asc';
+    }
+    setSortConfig({ key, direction });
+  };
+
+  // Sort reviews based on current sort config
+  const sortedReviews = [...reviews].sort((a, b) => {
+    if (!sortConfig) return 0;
+    
+    const { key, direction } = sortConfig;
+    let aVal: any = a[key as keyof Review];
+    let bVal: any = b[key as keyof Review];
+    
+    // Handle date sorting
+    if (key === 'submittedAt') {
+      aVal = new Date(aVal).getTime();
+      bVal = new Date(bVal).getTime();
+    }
+    
+    // Handle rating sorting
+    if (key === 'rating') {
+      aVal = aVal || 0;
+      bVal = bVal || 0;
+    }
+    
+    if (aVal < bVal) return direction === 'asc' ? -1 : 1;
+    if (aVal > bVal) return direction === 'asc' ? 1 : -1;
+    return 0;
+  });
 
   if (metricsLoading) {
     return (
@@ -112,20 +159,52 @@ export default function Dashboard() {
             </Button>
           </div>
 
-          {/* KPI Cards */}
-          {metrics && <KPICards metrics={metrics} />}
+          {/* Dashboard Tabs */}
+          <Tabs value={activeTab} onValueChange={setActiveTab} className="w-full">
+            <TabsList className="grid w-full grid-cols-3 mb-8">
+              <TabsTrigger value="overview" className="flex items-center">
+                <BarChart3 className="h-4 w-4 mr-2" />
+                Overview
+              </TabsTrigger>
+              <TabsTrigger value="properties" className="flex items-center">
+                <TrendingUp className="h-4 w-4 mr-2" />
+                Property Performance
+              </TabsTrigger>
+              <TabsTrigger value="reviews" className="flex items-center">
+                <Table className="h-4 w-4 mr-2" />
+                Review Management
+              </TabsTrigger>
+            </TabsList>
 
-          {/* Charts Section */}
-          {metrics && <ChartsSection metrics={metrics} />}
+            <TabsContent value="overview" className="space-y-6">
+              {/* KPI Cards */}
+              {metrics && <KPICards metrics={metrics} />}
+              
+              {/* Charts Section */}
+              {metrics && <ChartsSection metrics={metrics} />}
+            </TabsContent>
 
-          {/* Reviews Table */}
-          <ReviewsTable
-            reviews={reviews}
-            isLoading={reviewsLoading}
-            searchQuery={searchQuery}
-            onSearchChange={setSearchQuery}
-            onViewReview={handleViewReview}
-          />
+            <TabsContent value="properties" className="space-y-6">
+              <PropertyPerformance 
+                properties={properties}
+                reviews={reviews}
+                metrics={metrics}
+              />
+            </TabsContent>
+
+            <TabsContent value="reviews" className="space-y-6">
+              {/* Reviews Table */}
+              <ReviewsTable
+                reviews={sortedReviews}
+                isLoading={reviewsLoading}
+                searchQuery={searchQuery}
+                onSearchChange={setSearchQuery}
+                onViewReview={handleViewReview}
+                sortConfig={sortConfig}
+                onSort={handleSort}
+              />
+            </TabsContent>
+          </Tabs>
         </div>
       </div>
 

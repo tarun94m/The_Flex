@@ -155,7 +155,7 @@ export function Sidebar({ filters, onFiltersChange, onApplyFilters }: SidebarPro
           <Label className="block text-sm font-medium text-gray-700 mb-3">Review Status</Label>
           <RadioGroup 
             value={filters.status || "all"} 
-            onValueChange={(value) => handleFilterChange('status', value as 'all' | 'approved' | 'pending')}
+            onValueChange={(value) => handleFilterChange('status', value as 'all' | 'approved' | 'pending' | 'rejected')}
           >
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="all" id="all" data-testid="radio-all" />
@@ -168,6 +168,10 @@ export function Sidebar({ filters, onFiltersChange, onApplyFilters }: SidebarPro
             <div className="flex items-center space-x-2">
               <RadioGroupItem value="pending" id="pending" data-testid="radio-pending" />
               <Label htmlFor="pending" className="text-sm text-gray-600">Pending</Label>
+            </div>
+            <div className="flex items-center space-x-2">
+              <RadioGroupItem value="rejected" id="rejected" data-testid="radio-rejected" />
+              <Label htmlFor="rejected" className="text-sm text-gray-600">Rejected</Label>
             </div>
           </RadioGroup>
         </div>

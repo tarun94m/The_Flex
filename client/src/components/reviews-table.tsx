@@ -5,7 +5,7 @@ import { Input } from "@/components/ui/input";
 import { Badge } from "@/components/ui/badge";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from "@/components/ui/table";
-import { Eye, Check, X, Download, Star } from "lucide-react";
+import { Eye, Check, X, Download, Star, ArrowUpDown, ArrowUp, ArrowDown, CheckSquare, Square } from "lucide-react";
 import { useMutation, useQueryClient } from "@tanstack/react-query";
 import { api } from "@/lib/api";
 import { useToast } from "@/hooks/use-toast";
@@ -17,6 +17,11 @@ interface ReviewsTableProps {
   searchQuery: string;
   onSearchChange: (query: string) => void;
   onViewReview: (review: Review) => void;
+  sortConfig?: {
+    key: string;
+    direction: 'asc' | 'desc';
+  } | null;
+  onSort?: (key: string) => void;
 }
 
 export function ReviewsTable({ 
@@ -24,11 +29,14 @@ export function ReviewsTable({
   isLoading, 
   searchQuery, 
   onSearchChange, 
-  onViewReview 
+  onViewReview,
+  sortConfig,
+  onSort
 }: ReviewsTableProps) {
   const { toast } = useToast();
   const queryClient = useQueryClient();
   const [currentPage, setCurrentPage] = useState(1);
+  const [selectedReviews, setSelectedReviews] = useState<string[]>([]);
   const reviewsPerPage = 10;
 
   const approveMutation = useMutation({
@@ -68,6 +76,82 @@ export function ReviewsTable({
       });
     },
   });
+
+  const bulkApproveMutation = useMutation({
+    mutationFn: async (reviewIds: string[]) => {
+      const results = await Promise.all(
+        reviewIds.map(id => api.approveReview(id, "manager"))
+      );
+      return results;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+      setSelectedReviews([]);
+      toast({
+        title: "Bulk Action Complete",
+        description: `${selectedReviews.length} reviews have been approved.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to approve some reviews. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const bulkRejectMutation = useMutation({
+    mutationFn: async (reviewIds: string[]) => {
+      const results = await Promise.all(
+        reviewIds.map(id => api.rejectReview(id))
+      );
+      return results;
+    },
+    onSuccess: () => {
+      queryClient.invalidateQueries({ queryKey: ["/api/reviews"] });
+      queryClient.invalidateQueries({ queryKey: ["/api/dashboard/metrics"] });
+      setSelectedReviews([]);
+      toast({
+        title: "Bulk Action Complete",
+        description: `${selectedReviews.length} reviews have been rejected.`,
+      });
+    },
+    onError: () => {
+      toast({
+        title: "Error",
+        description: "Failed to reject some reviews. Please try again.",
+        variant: "destructive",
+      });
+    },
+  });
+
+  const handleSelectAll = () => {
+    if (selectedReviews.length === currentReviews.length) {
+      setSelectedReviews([]);
+    } else {
+      setSelectedReviews(currentReviews.map(r => r.id));
+    }
+  };
+
+  const handleSelectReview = (reviewId: string) => {
+    setSelectedReviews(prev => 
+      prev.includes(reviewId) 
+        ? prev.filter(id => id !== reviewId)
+        : [...prev, reviewId]
+    );
+  };
+
+  const handleBulkApprove = () => {
+    if (selectedReviews.length === 0) return;
+    bulkApproveMutation.mutate(selectedReviews);
+  };
+
+  const handleBulkReject = () => {
+    if (selectedReviews.length === 0) return;
+    bulkRejectMutation.mutate(selectedReviews);
+  };
 
   const handleExport = () => {
     const csvContent = [
@@ -136,8 +220,8 @@ export function ReviewsTable({
   return (
     <Card>
       <CardHeader>
-        <div className="flex items-center justify-between">
-          <h3 className="text-lg font-semibold text-gray-900">Recent Reviews</h3>
+        <div className="flex items-center justify-between mb-4">
+          <h3 className="text-lg font-semibold text-gray-900">Review Management</h3>
           <div className="flex items-center space-x-2">
             <Input
               type="search"
@@ -157,6 +241,36 @@ export function ReviewsTable({
             </Button>
           </div>
         </div>
+
+        {/* Bulk Actions */}
+        {selectedReviews.length > 0 && (
+          <div className="flex items-center justify-between p-3 bg-blue-50 rounded-lg mb-4">
+            <span className="text-sm text-blue-700">
+              {selectedReviews.length} review{selectedReviews.length !== 1 ? 's' : ''} selected
+            </span>
+            <div className="flex items-center space-x-2">
+              <Button
+                size="sm"
+                onClick={handleBulkApprove}
+                disabled={bulkApproveMutation.isPending}
+                data-testid="button-bulk-approve"
+              >
+                <Check className="h-3 w-3 mr-1" />
+                Approve Selected
+              </Button>
+              <Button
+                size="sm"
+                variant="destructive"
+                onClick={handleBulkReject}
+                disabled={bulkRejectMutation.isPending}
+                data-testid="button-bulk-reject"
+              >
+                <X className="h-3 w-3 mr-1" />
+                Reject Selected
+              </Button>
+            </div>
+          </div>
+        )}
       </CardHeader>
 
       <CardContent className="p-0">
@@ -164,13 +278,101 @@ export function ReviewsTable({
           <Table>
             <TableHeader>
               <TableRow>
-                <TableHead>Guest</TableHead>
-                <TableHead>Property</TableHead>
-                <TableHead>Channel</TableHead>
+                <TableHead className="w-12">
+                  <button
+                    onClick={handleSelectAll}
+                    className="flex items-center justify-center w-full"
+                    data-testid="checkbox-select-all"
+                  >
+                    {selectedReviews.length === currentReviews.length && currentReviews.length > 0 ? (
+                      <CheckSquare className="h-4 w-4" />
+                    ) : (
+                      <Square className="h-4 w-4" />
+                    )}
+                  </button>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('guestName')}
+                  data-testid="header-guest"
+                >
+                  <div className="flex items-center">
+                    Guest
+                    {sortConfig?.key === 'guestName' ? (
+                      sortConfig.direction === 'asc' ? 
+                        <ArrowUp className="h-3 w-3 ml-1" /> : 
+                        <ArrowDown className="h-3 w-3 ml-1" />
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('listingName')}
+                  data-testid="header-property"
+                >
+                  <div className="flex items-center">
+                    Property
+                    {sortConfig?.key === 'listingName' ? (
+                      sortConfig.direction === 'asc' ? 
+                        <ArrowUp className="h-3 w-3 ml-1" /> : 
+                        <ArrowDown className="h-3 w-3 ml-1" />
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
+                    )}
+                  </div>
+                </TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('channel')}
+                  data-testid="header-channel"
+                >
+                  <div className="flex items-center">
+                    Channel
+                    {sortConfig?.key === 'channel' ? (
+                      sortConfig.direction === 'asc' ? 
+                        <ArrowUp className="h-3 w-3 ml-1" /> : 
+                        <ArrowDown className="h-3 w-3 ml-1" />
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
+                    )}
+                  </div>
+                </TableHead>
                 <TableHead>Type</TableHead>
-                <TableHead>Rating</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('rating')}
+                  data-testid="header-rating"
+                >
+                  <div className="flex items-center">
+                    Rating
+                    {sortConfig?.key === 'rating' ? (
+                      sortConfig.direction === 'asc' ? 
+                        <ArrowUp className="h-3 w-3 ml-1" /> : 
+                        <ArrowDown className="h-3 w-3 ml-1" />
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
+                    )}
+                  </div>
+                </TableHead>
                 <TableHead>Review</TableHead>
-                <TableHead>Date</TableHead>
+                <TableHead 
+                  className="cursor-pointer hover:bg-gray-50"
+                  onClick={() => onSort?.('submittedAt')}
+                  data-testid="header-date"
+                >
+                  <div className="flex items-center">
+                    Date
+                    {sortConfig?.key === 'submittedAt' ? (
+                      sortConfig.direction === 'asc' ? 
+                        <ArrowUp className="h-3 w-3 ml-1" /> : 
+                        <ArrowDown className="h-3 w-3 ml-1" />
+                    ) : (
+                      <ArrowUpDown className="h-3 w-3 ml-1 opacity-50" />
+                    )}
+                  </div>
+                </TableHead>
                 <TableHead>Status</TableHead>
                 <TableHead>Actions</TableHead>
               </TableRow>
@@ -178,13 +380,26 @@ export function ReviewsTable({
             <TableBody>
               {currentReviews.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={9} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={10} className="text-center py-8 text-gray-500">
                     No reviews found matching your criteria.
                   </TableCell>
                 </TableRow>
               ) : (
                 currentReviews.map((review) => (
                   <TableRow key={review.id} className="hover:bg-gray-50" data-testid={`review-row-${review.id}`}>
+                    <TableCell>
+                      <button
+                        onClick={() => handleSelectReview(review.id)}
+                        className="flex items-center justify-center w-full"
+                        data-testid={`checkbox-review-${review.id}`}
+                      >
+                        {selectedReviews.includes(review.id) ? (
+                          <CheckSquare className="h-4 w-4 text-blue-600" />
+                        ) : (
+                          <Square className="h-4 w-4" />
+                        )}
+                      </button>
+                    </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-3">
                         <Avatar className="h-10 w-10">
