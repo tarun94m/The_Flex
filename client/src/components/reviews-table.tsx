@@ -71,10 +71,12 @@ export function ReviewsTable({
 
   const handleExport = () => {
     const csvContent = [
-      ["Guest Name", "Property", "Rating", "Review", "Date", "Status"],
+      ["Guest Name", "Property", "Channel", "Type", "Rating", "Review", "Date", "Status"],
       ...reviews.map(review => [
         review.guestName,
         review.listingName,
+        review.channel,
+        review.type,
         review.rating?.toString() || "N/A",
         review.publicReview?.replace(/"/g, '""') || "",
         new Date(review.submittedAt).toLocaleDateString(),
@@ -164,6 +166,8 @@ export function ReviewsTable({
               <TableRow>
                 <TableHead>Guest</TableHead>
                 <TableHead>Property</TableHead>
+                <TableHead>Channel</TableHead>
+                <TableHead>Type</TableHead>
                 <TableHead>Rating</TableHead>
                 <TableHead>Review</TableHead>
                 <TableHead>Date</TableHead>
@@ -174,7 +178,7 @@ export function ReviewsTable({
             <TableBody>
               {currentReviews.length === 0 ? (
                 <TableRow>
-                  <TableCell colSpan={7} className="text-center py-8 text-gray-500">
+                  <TableCell colSpan={9} className="text-center py-8 text-gray-500">
                     No reviews found matching your criteria.
                   </TableCell>
                 </TableRow>
@@ -201,6 +205,16 @@ export function ReviewsTable({
                       <div className="text-sm text-gray-500">
                         {review.listingName.split(' - ')[1] || ''}
                       </div>
+                    </TableCell>
+                    <TableCell>
+                      <Badge variant="outline" data-testid={`channel-${review.id}`}>
+                        {review.channel}
+                      </Badge>
+                    </TableCell>
+                    <TableCell>
+                      <span className="text-sm text-gray-600 capitalize" data-testid={`type-${review.id}`}>
+                        {review.type.replace('-', ' ')}
+                      </span>
                     </TableCell>
                     <TableCell>
                       <div className="flex items-center space-x-1">

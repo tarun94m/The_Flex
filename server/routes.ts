@@ -23,19 +23,39 @@ export async function registerRoutes(app: Express): Promise<Server> {
         },
       });
 
-      // Normalize the data structure
+      // Parse and normalize the data structure by listing, type, channel, and date
       const hostawayReviews = response.data.result || [];
-      const normalizedReviews = hostawayReviews.map((review: any) => ({
-        id: review.id.toString(),
-        type: review.type || "guest-to-host",
-        status: review.status || "published",
-        rating: review.rating || calculateAverageRating(review.reviewCategory),
-        publicReview: review.publicReview || "",
-        reviewCategory: review.reviewCategory || [],
-        submittedAt: new Date(review.submittedAt || Date.now()),
-        guestName: review.guestName || "Anonymous Guest",
-        listingName: review.listingName || "Unknown Property",
-      }));
+      const normalizedReviews = hostawayReviews.map((review: any) => {
+        // Parse and normalize listing information
+        const listingName = review.listingName || "Unknown Property";
+        const listingId = extractListingId(listingName);
+        
+        // Normalize review type
+        const reviewType = normalizeReviewType(review.type);
+        
+        // Determine channel source
+        const channel = "hostaway";
+        
+        // Parse and validate date
+        const submittedDate = parseReviewDate(review.submittedAt);
+        
+        // Calculate rating if not provided
+        const rating = review.rating || calculateAverageRating(review.reviewCategory);
+        
+        return {
+          id: review.id.toString(),
+          type: reviewType,
+          status: review.status || "published",
+          channel,
+          rating,
+          publicReview: review.publicReview || "",
+          reviewCategory: normalizeReviewCategories(review.reviewCategory),
+          submittedAt: submittedDate,
+          guestName: review.guestName || "Anonymous Guest",
+          listingName,
+          listingId,
+        };
+      });
 
       // Store reviews in memory
       for (const review of normalizedReviews) {
@@ -51,12 +71,13 @@ export async function registerRoutes(app: Express): Promise<Server> {
     } catch (error: any) {
       console.error("Hostaway API error:", error.message);
       
-      // Return mock data if API fails for development purposes
+      // Return normalized mock data if API fails for development purposes
       const mockReviews = [
         {
           id: "7453",
           type: "guest-to-host",
           status: "published",
+          channel: "hostaway",
           rating: 5,
           publicReview: "Shane and family are wonderful! Would definitely host again :)",
           reviewCategory: [
@@ -66,7 +87,42 @@ export async function registerRoutes(app: Express): Promise<Server> {
           ],
           submittedAt: new Date("2020-08-21T22:45:14Z"),
           guestName: "Shane Finkelstein",
-          listingName: "2B N1 A - 29 Shoreditch Heights"
+          listingName: "2B N1 A - 29 Shoreditch Heights",
+          listingId: "shoreditch-29"
+        },
+        {
+          id: "7454",
+          type: "guest-to-host", 
+          status: "published",
+          channel: "airbnb",
+          rating: 4,
+          publicReview: "Great location and clean apartment. Really enjoyed our stay!",
+          reviewCategory: [
+            { category: "cleanliness", rating: 9 },
+            { category: "communication", rating: 8 },
+            { category: "respect_house_rules", rating: 10 }
+          ],
+          submittedAt: new Date("2024-01-15T14:30:00Z"),
+          guestName: "Emma Thompson",
+          listingName: "Modern 2BR in Trendy Shoreditch",
+          listingId: "shoreditch-29"
+        },
+        {
+          id: "7455",
+          type: "guest-to-host",
+          status: "published", 
+          channel: "booking.com",
+          rating: 5,
+          publicReview: "Perfect apartment for exploring Camden. Host was very responsive.",
+          reviewCategory: [
+            { category: "cleanliness", rating: 10 },
+            { category: "communication", rating: 10 },
+            { category: "respect_house_rules", rating: 9 }
+          ],
+          submittedAt: new Date("2024-01-10T10:15:00Z"),
+          guestName: "David Chen",
+          listingName: "Stylish Camden Apartment",
+          listingId: "camden-15"
         }
       ];
 
@@ -253,6 +309,43 @@ export async function registerRoutes(app: Express): Promise<Server> {
 
   const httpServer = createServer(app);
   return httpServer;
+}
+
+// Helper functions for parsing and normalizing reviews
+
+// Extract listing ID from listing name for normalization
+function extractListingId(listingName: string): string {
+  // Convert listing name to a normalized ID
+  return listingName
+    .toLowerCase()
+    .replace(/[^a-z0-9\s-]/g, '')
+    .replace(/\s+/g, '-')
+    .substring(0, 50);
+}
+
+// Normalize review type
+function normalizeReviewType(type: string): string {
+  if (!type) return "guest-to-host";
+  return type.toLowerCase().includes("host") ? "host-to-guest" : "guest-to-host";
+}
+
+// Parse and validate review date
+function parseReviewDate(dateString: string): Date {
+  if (!dateString) return new Date();
+  const parsed = new Date(dateString);
+  return isNaN(parsed.getTime()) ? new Date() : parsed;
+}
+
+// Normalize review categories
+function normalizeReviewCategories(categories: any[]): Array<{category: string, rating: number}> {
+  if (!categories || !Array.isArray(categories)) return [];
+  
+  return categories
+    .filter(cat => cat && typeof cat === 'object' && cat.category && typeof cat.rating === 'number')
+    .map(cat => ({
+      category: cat.category.toLowerCase().replace(/\s+/g, '_'),
+      rating: Math.max(0, Math.min(10, cat.rating)) // Ensure rating is between 0-10
+    }));
 }
 
 // Helper function to calculate average rating from categories

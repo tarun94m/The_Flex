@@ -112,12 +112,25 @@ export class MemStorage implements IStorage {
         }
       }
 
+      if (filters.channel && filters.channel !== 'all') {
+        reviews = reviews.filter(review => 
+          review.channel.toLowerCase() === filters.channel!.toLowerCase()
+        );
+      }
+
+      if (filters.type && filters.type !== 'all') {
+        reviews = reviews.filter(review => 
+          review.type === filters.type
+        );
+      }
+
       if (filters.search) {
         const searchTerm = filters.search.toLowerCase();
         reviews = reviews.filter(review => 
           review.publicReview?.toLowerCase().includes(searchTerm) ||
           review.guestName.toLowerCase().includes(searchTerm) ||
-          review.listingName.toLowerCase().includes(searchTerm)
+          review.listingName.toLowerCase().includes(searchTerm) ||
+          review.channel.toLowerCase().includes(searchTerm)
         );
       }
 
@@ -150,7 +163,8 @@ export class MemStorage implements IStorage {
       ...review,
       rating: review.rating || null,
       publicReview: review.publicReview || null,
-      reviewCategory: review.reviewCategory || null,
+      reviewCategory: Array.isArray(review.reviewCategory) ? review.reviewCategory : null,
+      listingId: review.listingId || null,
       approved: false,
       approvedAt: null,
       approvedBy: null,

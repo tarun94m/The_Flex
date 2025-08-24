@@ -118,6 +118,38 @@ export function Sidebar({ filters, onFiltersChange, onApplyFilters }: SidebarPro
           </div>
         </div>
 
+        {/* Channel Filter */}
+        <div className="mb-6">
+          <Label className="block text-sm font-medium text-gray-700 mb-2">Channel</Label>
+          <Select value={filters.channel || "all"} onValueChange={(value) => handleFilterChange('channel', value === 'all' ? undefined : value)}>
+            <SelectTrigger data-testid="select-channel">
+              <SelectValue placeholder="All Channels" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Channels</SelectItem>
+              <SelectItem value="hostaway">Hostaway</SelectItem>
+              <SelectItem value="airbnb">Airbnb</SelectItem>
+              <SelectItem value="booking.com">Booking.com</SelectItem>
+              <SelectItem value="direct">Direct</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Review Type Filter */}
+        <div className="mb-6">
+          <Label className="block text-sm font-medium text-gray-700 mb-2">Review Type</Label>
+          <Select value={filters.type || "all"} onValueChange={(value) => handleFilterChange('type', value === 'all' ? undefined : value)}>
+            <SelectTrigger data-testid="select-type">
+              <SelectValue placeholder="All Types" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Types</SelectItem>
+              <SelectItem value="guest-to-host">Guest to Host</SelectItem>
+              <SelectItem value="host-to-guest">Host to Guest</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
         {/* Review Status */}
         <div className="mb-6">
           <Label className="block text-sm font-medium text-gray-700 mb-3">Review Status</Label>

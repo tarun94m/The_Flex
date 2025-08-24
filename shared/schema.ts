@@ -13,12 +13,14 @@ export const reviews = pgTable("reviews", {
   id: varchar("id").primaryKey(),
   type: text("type").notNull(), // "host-to-guest" or "guest-to-host"
   status: text("status").notNull(), // "published", "pending", etc.
+  channel: text("channel").notNull(), // "hostaway", "airbnb", "booking.com", "direct", etc.
   rating: integer("rating"),
   publicReview: text("public_review"),
   reviewCategory: jsonb("review_category").$type<Array<{category: string, rating: number}>>(),
   submittedAt: timestamp("submitted_at").notNull(),
   guestName: text("guest_name").notNull(),
   listingName: text("listing_name").notNull(),
+  listingId: varchar("listing_id"), // Normalized listing identifier
   approved: boolean("approved").default(false),
   approvedAt: timestamp("approved_at"),
   approvedBy: varchar("approved_by"),
@@ -66,6 +68,8 @@ export const reviewFiltersSchema = z.object({
   startDate: z.string().optional(),
   endDate: z.string().optional(),
   status: z.enum(['all', 'approved', 'pending']).optional(),
+  channel: z.string().optional(),
+  type: z.string().optional(),
   search: z.string().optional(),
 });
 
