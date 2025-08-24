@@ -307,6 +307,91 @@ export async function registerRoutes(app: Express): Promise<Server> {
     }
   });
 
+  // Google Reviews basic integration (mock implementation)
+  app.get("/api/google-reviews/:propertyId", async (req, res) => {
+    try {
+      const { propertyId } = req.params;
+      
+      // Mock Google Reviews data structure for demonstration
+      // In real implementation, this would call Google Places API
+      const mockGoogleReviews = [
+        {
+          author_name: "Sarah Johnson",
+          author_url: "https://www.google.com/maps/contrib/123456789",
+          language: "en",
+          profile_photo_url: "https://lh3.googleusercontent.com/a/default-user=s128-c0x00000000-cc-rp-mo",
+          rating: 5,
+          relative_time_description: "2 months ago",
+          text: "Exceptional stay! The apartment was spotless and exactly as described. Perfect location for exploring London.",
+          time: 1640995200
+        },
+        {
+          author_name: "Michael Chen",
+          author_url: "https://www.google.com/maps/contrib/987654321",
+          language: "en", 
+          profile_photo_url: "https://lh3.googleusercontent.com/a/default-user=s128-c0x00000000-cc-rp-mo",
+          rating: 4,
+          relative_time_description: "3 months ago", 
+          text: "Great property with modern amenities. Host was very responsive. Only minor issue was WiFi connectivity.",
+          time: 1638316800
+        }
+      ];
+
+      // Normalize Google Reviews to match internal schema
+      const normalizedGoogleReviews = mockGoogleReviews.map((googleReview, index) => ({
+        id: `google_${propertyId}_${index}`,
+        type: "guest-to-host",
+        status: "published",
+        channel: "google",
+        rating: googleReview.rating,
+        publicReview: googleReview.text,
+        reviewCategory: null, // Google doesn't provide category breakdowns
+        submittedAt: new Date(googleReview.time * 1000),
+        guestName: googleReview.author_name,
+        listingName: "Property from Google Maps",
+        listingId: propertyId,
+        source: "google_places",
+        googleData: {
+          author_url: googleReview.author_url,
+          profile_photo_url: googleReview.profile_photo_url,
+          relative_time_description: googleReview.relative_time_description
+        }
+      }));
+
+      res.json({
+        status: "success",
+        source: "google_places_mock",
+        property_id: propertyId,
+        reviews: normalizedGoogleReviews,
+        integration_notes: {
+          implementation_status: "mock_demonstration",
+          real_implementation_requires: [
+            "Google Places API key",
+            "Place ID for this property",
+            "Proper error handling for API limits"
+          ],
+          benefits: [
+            "Access to public Google reviews",
+            "Broader review coverage",
+            "Trusted review source"
+          ],
+          challenges: [
+            "API costs at scale",
+            "Rate limiting",
+            "No category-specific ratings",
+            "Limited review metadata"
+          ]
+        }
+      });
+    } catch (error: any) {
+      res.status(500).json({ 
+        message: "Failed to fetch Google Reviews", 
+        error: error.message,
+        note: "This is a mock implementation for demonstration"
+      });
+    }
+  });
+
   const httpServer = createServer(app);
   return httpServer;
 }

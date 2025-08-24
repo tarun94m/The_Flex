@@ -5,7 +5,8 @@ import { Button } from "@/components/ui/button";
 import { Card, CardContent } from "@/components/ui/card";
 import { Avatar, AvatarFallback, AvatarImage } from "@/components/ui/avatar";
 import { Badge } from "@/components/ui/badge";
-import { Star, Wifi, Tv, Snowflake, UtensilsCrossed, ChevronRight } from "lucide-react";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "@/components/ui/tabs";
+import { Star, Wifi, Tv, Snowflake, UtensilsCrossed, ChevronRight, Globe } from "lucide-react";
 import { api } from "@/lib/api";
 import type { Property, Review } from "@shared/schema";
 
@@ -17,6 +18,14 @@ export default function PropertyPage() {
     queryKey: ["/api/properties", propertyId],
     queryFn: () => api.getPropertyById(propertyId!),
     enabled: !!propertyId,
+  });
+
+  // Google Reviews integration (demonstration)
+  const { data: googleReviewsData } = useQuery({
+    queryKey: ["/api/google-reviews", propertyId],
+    queryFn: () => api.getGoogleReviews(propertyId!),
+    enabled: !!propertyId,
+    staleTime: 300000, // 5 minutes
   });
 
   const renderStars = (rating: number) => {
@@ -160,96 +169,239 @@ export default function PropertyPage() {
                 </div>
               </div>
 
-              {/* Guest Reviews Section */}
+              {/* Guest Reviews Section - Enhanced Flex Living Style */}
               <div className="mb-8">
-                <h2 className="text-xl font-semibold text-gray-900 mb-6">Guest Reviews</h2>
+                <div className="flex items-center justify-between mb-8">
+                  <h2 className="text-2xl font-bold text-gray-900">What guests are saying</h2>
+                  {approvedReviews.length > 0 && (
+                    <div className="flex items-center space-x-2">
+                      <div className="flex text-yellow-400">
+                        {renderStars(Math.round(averageRating))}
+                      </div>
+                      <span className="text-lg font-semibold text-gray-900" data-testid="average-rating">
+                        {averageRating.toFixed(1)}
+                      </span>
+                      <span className="text-gray-500" data-testid="review-count">
+                        ({approvedReviews.length} reviews)
+                      </span>
+                    </div>
+                  )}
+                </div>
                 
                 {approvedReviews.length > 0 ? (
                   <>
-                    <Card className="bg-gray-50 mb-6">
-                      <CardContent className="p-6">
-                        <div className="flex items-center justify-between mb-4">
-                          <div className="flex items-center space-x-2">
-                            <div className="flex text-yellow-400 text-xl">
-                              {renderStars(Math.round(averageRating))}
-                            </div>
-                            <span className="text-2xl font-bold text-gray-900" data-testid="average-rating">
-                              {averageRating.toFixed(1)}
-                            </span>
+                    {/* Category Ratings Grid */}
+                    <div className="grid grid-cols-1 md:grid-cols-3 gap-6 mb-8">
+                      <Card className="border-0 shadow-sm">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-gray-900 mb-1" data-testid="category-cleanliness-avg">
+                            {categoryAverages.cleanliness.toFixed(1)}
                           </div>
-                          <div className="text-sm text-gray-600" data-testid="review-count">
-                            Based on {approvedReviews.length} reviews
+                          <div className="text-sm text-gray-600">Cleanliness</div>
+                          <div className="flex justify-center mt-2">
+                            {renderStars(Math.round(categoryAverages.cleanliness))}
                           </div>
-                        </div>
-                        
-                        <div className="grid grid-cols-1 md:grid-cols-3 gap-4 text-sm">
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Cleanliness</span>
-                            <span className="font-semibold" data-testid="category-cleanliness-avg">
-                              {categoryAverages.cleanliness.toFixed(1)}
-                            </span>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-0 shadow-sm">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-gray-900 mb-1" data-testid="category-communication-avg">
+                            {categoryAverages.communication.toFixed(1)}
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">Communication</span>
-                            <span className="font-semibold" data-testid="category-communication-avg">
-                              {categoryAverages.communication.toFixed(1)}
-                            </span>
+                          <div className="text-sm text-gray-600">Communication</div>
+                          <div className="flex justify-center mt-2">
+                            {renderStars(Math.round(categoryAverages.communication))}
                           </div>
-                          <div className="flex justify-between">
-                            <span className="text-gray-600">House Rules</span>
-                            <span className="font-semibold" data-testid="category-house-rules-avg">
-                              {categoryAverages.house_rules.toFixed(1)}
-                            </span>
+                        </CardContent>
+                      </Card>
+                      <Card className="border-0 shadow-sm">
+                        <CardContent className="p-4 text-center">
+                          <div className="text-2xl font-bold text-gray-900 mb-1" data-testid="category-house-rules-avg">
+                            {categoryAverages.house_rules.toFixed(1)}
                           </div>
-                        </div>
-                      </CardContent>
-                    </Card>
+                          <div className="text-sm text-gray-600">House Rules</div>
+                          <div className="flex justify-center mt-2">
+                            {renderStars(Math.round(categoryAverages.house_rules))}
+                          </div>
+                        </CardContent>
+                      </Card>
+                    </div>
 
-                    {/* Individual Reviews (Only Approved) */}
-                    <div className="space-y-6">
-                      {approvedReviews.slice(0, 3).map((review) => (
-                        <div key={review.id} className="border-b border-gray-200 pb-6 last:border-b-0" data-testid={`review-${review.id}`}>
-                          <div className="flex items-start space-x-4">
-                            <Avatar className="h-12 w-12">
-                              <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${review.guestName}`} />
-                              <AvatarFallback>{review.guestName.split(' ').map(n => n[0]).join('')}</AvatarFallback>
-                            </Avatar>
-                            <div className="flex-1">
-                              <div className="flex items-center justify-between mb-2">
-                                <h4 className="text-sm font-semibold text-gray-900" data-testid={`review-guest-${review.id}`}>
-                                  {review.guestName}
-                                </h4>
-                                <span className="text-sm text-gray-500" data-testid={`review-date-${review.id}`}>
-                                  {formatDate(review.submittedAt)}
-                                </span>
+                    {/* Featured Reviews - Only Manager-Approved */}
+                    <div className="space-y-8">
+                      <h3 className="text-lg font-semibold text-gray-900 mb-4">Featured Guest Reviews</h3>
+                      {approvedReviews.slice(0, 4).map((review) => (
+                        <Card key={review.id} className="border-0 shadow-sm hover:shadow-md transition-shadow" data-testid={`review-${review.id}`}>
+                          <CardContent className="p-6">
+                            <div className="flex items-start space-x-4">
+                              <Avatar className="h-14 w-14 border-2 border-gray-100">
+                                <AvatarImage src={`https://api.dicebear.com/7.x/initials/svg?seed=${review.guestName}`} />
+                                <AvatarFallback className="text-lg font-semibold">
+                                  {review.guestName.split(' ').map(n => n[0]).join('')}
+                                </AvatarFallback>
+                              </Avatar>
+                              <div className="flex-1">
+                                <div className="flex items-center justify-between mb-3">
+                                  <div>
+                                    <h4 className="text-lg font-semibold text-gray-900" data-testid={`review-guest-${review.id}`}>
+                                      {review.guestName}
+                                    </h4>
+                                    <div className="flex items-center space-x-2 mt-1">
+                                      <div className="flex text-yellow-400">
+                                        {renderStars(review.rating || 0)}
+                                      </div>
+                                      <Badge variant="outline" className="text-xs">
+                                        {review.channel}
+                                      </Badge>
+                                    </div>
+                                  </div>
+                                  <span className="text-sm text-gray-500" data-testid={`review-date-${review.id}`}>
+                                    {formatDate(review.submittedAt)}
+                                  </span>
+                                </div>
+                                
+                                <blockquote className="text-gray-700 leading-relaxed mb-4" data-testid={`review-text-${review.id}`}>
+                                  "{review.publicReview}"
+                                </blockquote>
+                                
+                                {/* Category Breakdown */}
+                                {review.reviewCategory && review.reviewCategory.length > 0 && (
+                                  <div className="grid grid-cols-3 gap-4 pt-4 border-t border-gray-100">
+                                    {review.reviewCategory.map((category) => (
+                                      <div key={category.category} className="text-center">
+                                        <div className="text-sm font-medium text-gray-600 mb-1 capitalize">
+                                          {category.category.replace(/_/g, ' ')}
+                                        </div>
+                                        <div className="text-lg font-bold text-primary" data-testid={`category-${category.category}-${review.id}`}>
+                                          {(category.rating / 2).toFixed(1)}
+                                        </div>
+                                      </div>
+                                    ))}
+                                  </div>
+                                )}
                               </div>
-                              <div className="flex text-yellow-400 mb-2">
-                                {renderStars(review.rating || 0)}
-                              </div>
-                              <p className="text-gray-700 text-sm leading-relaxed" data-testid={`review-text-${review.id}`}>
-                                {review.publicReview}
-                              </p>
                             </div>
-                          </div>
-                        </div>
+                          </CardContent>
+                        </Card>
                       ))}
                       
-                      {approvedReviews.length > 3 && (
-                        <Button
-                          variant="ghost"
-                          className="text-primary hover:text-blue-700"
-                          data-testid="button-show-all-reviews"
-                        >
-                          Show all {approvedReviews.length} reviews
-                          <ChevronRight className="h-4 w-4 ml-1" />
-                        </Button>
+                      {approvedReviews.length > 4 && (
+                        <div className="text-center">
+                          <Button
+                            variant="outline"
+                            size="lg"
+                            className="px-8"
+                            data-testid="button-show-all-reviews"
+                          >
+                            Show all {approvedReviews.length} reviews
+                            <ChevronRight className="h-4 w-4 ml-2" />
+                          </Button>
+                        </div>
                       )}
+                    </div>
+                    
+                    {/* Multi-Source Reviews with Google Integration */}
+                    {googleReviewsData?.reviews && googleReviewsData.reviews.length > 0 && (
+                      <div className="mt-8">
+                        <Tabs defaultValue="approved" className="w-full">
+                          <TabsList className="grid w-full grid-cols-2">
+                            <TabsTrigger value="approved">Platform Reviews ({approvedReviews.length})</TabsTrigger>
+                            <TabsTrigger value="google" className="flex items-center">
+                              <Globe className="h-4 w-4 mr-1" />
+                              Google Reviews ({googleReviewsData.reviews.length})
+                            </TabsTrigger>
+                          </TabsList>
+                          
+                          <TabsContent value="approved" className="space-y-6 mt-6">
+                            {/* Platform reviews already displayed above */}
+                          </TabsContent>
+                          
+                          <TabsContent value="google" className="space-y-6 mt-6">
+                            <div className="bg-yellow-50 border border-yellow-200 rounded-lg p-4 mb-6">
+                              <div className="flex items-center space-x-2 text-yellow-800">
+                                <Globe className="h-5 w-5" />
+                                <span className="font-medium">Google Reviews Integration (Demo)</span>
+                              </div>
+                              <p className="text-yellow-700 text-sm mt-1">
+                                This demonstrates how Google Places API reviews would be integrated and displayed.
+                              </p>
+                            </div>
+                            
+                            {googleReviewsData.reviews.map((review: any, index: number) => (
+                              <Card key={`google-${index}`} className="border-0 shadow-sm hover:shadow-md transition-shadow">
+                                <CardContent className="p-6">
+                                  <div className="flex items-start space-x-4">
+                                    <Avatar className="h-14 w-14 border-2 border-gray-100">
+                                      <AvatarImage src={review.googleData?.profile_photo_url} />
+                                      <AvatarFallback className="text-lg font-semibold">
+                                        {review.guestName.split(' ').map((n: string) => n[0]).join('')}
+                                      </AvatarFallback>
+                                    </Avatar>
+                                    <div className="flex-1">
+                                      <div className="flex items-center justify-between mb-3">
+                                        <div>
+                                          <h4 className="text-lg font-semibold text-gray-900">
+                                            {review.guestName}
+                                          </h4>
+                                          <div className="flex items-center space-x-2 mt-1">
+                                            <div className="flex text-yellow-400">
+                                              {renderStars(review.rating)}
+                                            </div>
+                                            <Badge variant="outline" className="text-xs bg-blue-50 text-blue-700">
+                                              <Globe className="h-3 w-3 mr-1" />
+                                              Google
+                                            </Badge>
+                                          </div>
+                                        </div>
+                                        <span className="text-sm text-gray-500">
+                                          {review.googleData?.relative_time_description}
+                                        </span>
+                                      </div>
+                                      
+                                      <blockquote className="text-gray-700 leading-relaxed">
+                                        "{review.publicReview}"
+                                      </blockquote>
+                                    </div>
+                                  </div>
+                                </CardContent>
+                              </Card>
+                            ))}
+                          </TabsContent>
+                        </Tabs>
+                      </div>
+                    )}
+                    
+                    {/* Review Summary Footer */}
+                    <div className="mt-8 p-6 bg-gradient-to-r from-blue-50 to-indigo-50 rounded-lg">
+                      <div className="text-center">
+                        <h4 className="text-lg font-semibold text-gray-900 mb-2">Consistently rated excellent</h4>
+                        <p className="text-gray-600 text-sm">
+                          {approvedReviews.length} verified guests have given this property an average rating of {averageRating.toFixed(1)} stars
+                          {googleReviewsData?.reviews && (
+                            <span> • {googleReviewsData.reviews.length} additional reviews from Google</span>
+                          )}
+                        </p>
+                      </div>
                     </div>
                   </>
                 ) : (
-                  <div className="text-center py-8 text-gray-500">
-                    <p>No approved reviews available for this property yet.</p>
-                  </div>
+                  <Card className="border-0 shadow-sm">
+                    <CardContent className="p-8 text-center">
+                      <div className="text-gray-500">
+                        <h3 className="text-lg font-medium mb-2">No guest reviews yet</h3>
+                        <p>Be the first to review this property and share your experience with future guests.</p>
+                        {googleReviewsData?.reviews && googleReviewsData.reviews.length > 0 && (
+                          <div className="mt-4">
+                            <p className="text-sm">However, this property has {googleReviewsData.reviews.length} reviews on Google.</p>
+                            <Button variant="outline" className="mt-2">
+                              <Globe className="h-4 w-4 mr-2" />
+                              View Google Reviews
+                            </Button>
+                          </div>
+                        )}
+                      </div>
+                    </CardContent>
+                  </Card>
                 )}
               </div>
             </div>

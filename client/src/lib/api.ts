@@ -81,4 +81,10 @@ export const api = {
     const response = await apiRequest("GET", "/api/google-reviews/explore");
     return response.json();
   },
+
+  // Google Reviews integration
+  async getGoogleReviews(propertyId: string) {
+    const response = await apiRequest("GET", `/api/google-reviews/${propertyId}`);
+    return response.json();
+  },
 };
