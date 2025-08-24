@@ -42,18 +42,72 @@ export class MemStorage implements IStorage {
         address: "29 Shoreditch Heights, London E1 6JE",
         description: "Experience the best of London living in this beautifully designed 2-bedroom apartment in the heart of Shoreditch.",
         price: 125,
+        category: "apartment",
+        bedrooms: 2,
+        bathrooms: 2,
       },
       {
         name: "Stylish Camden Apartment",
         address: "15 Camden Square, London NW1 9XA",
         description: "A contemporary apartment in the vibrant Camden area with excellent transport links.",
         price: 110,
+        category: "apartment",
+        bedrooms: 1,
+        bathrooms: 1,
       },
       {
         name: "Luxury Notting Hill Studio",
         address: "8 Notting Hill Gardens, London W11 3DF",
         description: "A beautiful studio apartment in prestigious Notting Hill with modern amenities.",
         price: 95,
+        category: "studio",
+        bedrooms: 1,
+        bathrooms: 1,
+      },
+      {
+        name: "Cozy Covent Garden Flat",
+        address: "42 Covent Garden Plaza, London WC2E 8RF",
+        description: "A charming flat in the heart of Covent Garden, perfect for theater and shopping enthusiasts.",
+        price: 140,
+        category: "flat",
+        bedrooms: 1,
+        bathrooms: 1,
+      },
+      {
+        name: "Spacious Kensington House",
+        address: "78 Kensington High Street, London W8 4PE",
+        description: "A magnificent 3-bedroom house in prestigious Kensington with garden access.",
+        price: 200,
+        category: "house",
+        bedrooms: 3,
+        bathrooms: 2,
+      },
+      {
+        name: "Contemporary Canary Wharf Studio",
+        address: "12 Canary Wharf Drive, London E14 5AB",
+        description: "Modern studio apartment in the financial district with stunning city views.",
+        price: 120,
+        category: "studio",
+        bedrooms: 1,
+        bathrooms: 1,
+      },
+      {
+        name: "Historic Greenwich Townhouse",
+        address: "25 Greenwich Park Road, London SE10 9LS",
+        description: "Beautiful Victorian townhouse near Greenwich Park with period features.",
+        price: 180,
+        category: "townhouse",
+        bedrooms: 4,
+        bathrooms: 3,
+      },
+      {
+        name: "Chic Hackney Loft",
+        address: "88 Hackney Road, London E2 7QL",
+        description: "Industrial-style loft in trendy Hackney with exposed brick and high ceilings.",
+        price: 130,
+        category: "loft",
+        bedrooms: 2,
+        bathrooms: 2,
       },
     ];
 
@@ -89,6 +143,17 @@ export class MemStorage implements IStorage {
         );
       }
 
+      if (filters.propertyCategory && filters.propertyCategory !== 'all') {
+        // Filter by property category - get properties first and match their categories
+        const properties = Array.from(this.properties.values());
+        const categoryProperties = properties.filter(p => p.category === filters.propertyCategory);
+        const propertyIds = categoryProperties.map(p => p.id);
+        reviews = reviews.filter(review => 
+          propertyIds.includes(review.listingId || '') ||
+          categoryProperties.some(p => review.listingName.includes(p.name))
+        );
+      }
+
       if (filters.rating && filters.rating !== 'all') {
         const minRating = parseInt(filters.rating.replace('+', '').replace(' Stars', ''));
         reviews = reviews.filter(review => 
@@ -108,7 +173,9 @@ export class MemStorage implements IStorage {
         if (filters.status === 'approved') {
           reviews = reviews.filter(review => review.approved === true);
         } else if (filters.status === 'pending') {
-          reviews = reviews.filter(review => review.approved === false);
+          reviews = reviews.filter(review => review.approved === false && !review.rejected);
+        } else if (filters.status === 'rejected') {
+          reviews = reviews.filter(review => review.rejected === true);
         }
       }
 
@@ -166,8 +233,11 @@ export class MemStorage implements IStorage {
       reviewCategory: Array.isArray(review.reviewCategory) ? review.reviewCategory : null,
       listingId: review.listingId || null,
       approved: false,
+      rejected: false,
       approvedAt: null,
       approvedBy: null,
+      rejectedAt: null,
+      rejectedBy: null,
     };
     this.reviews.set(review.id, newReview);
     return newReview;
@@ -203,8 +273,11 @@ export class MemStorage implements IStorage {
     const updatedReview: Review = {
       ...review,
       approved: false,
+      rejected: true,
       approvedAt: null,
       approvedBy: null,
+      rejectedAt: new Date(),
+      rejectedBy: "manager",
     };
     this.reviews.set(id, updatedReview);
     return updatedReview;
@@ -226,6 +299,9 @@ export class MemStorage implements IStorage {
       description: insertProperty.description || null,
       averageRating: 0,
       reviewCount: 0,
+      category: insertProperty.category,
+      bedrooms: insertProperty.bedrooms || 1,
+      bathrooms: insertProperty.bathrooms || 1,
     };
     this.properties.set(id, property);
     return property;

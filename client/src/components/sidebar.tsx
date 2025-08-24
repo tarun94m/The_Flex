@@ -41,9 +41,33 @@ export function Sidebar({ filters, onFiltersChange, onApplyFilters }: SidebarPro
             </SelectTrigger>
             <SelectContent>
               <SelectItem value="all">All Properties</SelectItem>
-              <SelectItem value="shoreditch">29 Shoreditch Heights</SelectItem>
-              <SelectItem value="camden">15 Camden Square</SelectItem>
-              <SelectItem value="notting">8 Notting Hill Gardens</SelectItem>
+              <SelectItem value="shoreditch">Shoreditch Heights</SelectItem>
+              <SelectItem value="camden">Camden Square</SelectItem>
+              <SelectItem value="notting">Notting Hill Gardens</SelectItem>
+              <SelectItem value="covent">Covent Garden Plaza</SelectItem>
+              <SelectItem value="kensington">Kensington High Street</SelectItem>
+              <SelectItem value="canary">Canary Wharf Drive</SelectItem>
+              <SelectItem value="greenwich">Greenwich Park Road</SelectItem>
+              <SelectItem value="hackney">Hackney Road</SelectItem>
+            </SelectContent>
+          </Select>
+        </div>
+
+        {/* Property Category Filter */}
+        <div className="mb-6">
+          <Label className="block text-sm font-medium text-gray-700 mb-2">Property Category</Label>
+          <Select value={filters.propertyCategory || "all"} onValueChange={(value) => handleFilterChange('propertyCategory', value === 'all' ? undefined : value)}>
+            <SelectTrigger data-testid="select-property-category">
+              <SelectValue placeholder="All Categories" />
+            </SelectTrigger>
+            <SelectContent>
+              <SelectItem value="all">All Categories</SelectItem>
+              <SelectItem value="apartment">Apartment</SelectItem>
+              <SelectItem value="studio">Studio</SelectItem>
+              <SelectItem value="flat">Flat</SelectItem>
+              <SelectItem value="house">House</SelectItem>
+              <SelectItem value="townhouse">Townhouse</SelectItem>
+              <SelectItem value="loft">Loft</SelectItem>
             </SelectContent>
           </Select>
         </div>

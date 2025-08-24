@@ -144,19 +144,11 @@ export default function Dashboard() {
         {/* Main Content */}
         <div className="ml-64 p-6">
           {/* Dashboard Header */}
-          <div className="mb-8 flex items-center justify-between">
+          <div className="mb-8">
             <div>
               <h1 className="text-2xl font-bold text-gray-900">Reviews Dashboard</h1>
               <p className="text-gray-600 mt-1">Monitor and manage guest reviews across all properties</p>
             </div>
-            <Button
-              onClick={handleSyncHostaway}
-              variant="outline"
-              data-testid="button-sync-hostaway"
-            >
-              <RefreshCw className="h-4 w-4 mr-2" />
-              Sync Hostaway Reviews
-            </Button>
           </div>
 
           {/* Dashboard Tabs */}

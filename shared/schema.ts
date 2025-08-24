@@ -22,8 +22,11 @@ export const reviews = pgTable("reviews", {
   listingName: text("listing_name").notNull(),
   listingId: varchar("listing_id"), // Normalized listing identifier
   approved: boolean("approved").default(false),
+  rejected: boolean("rejected").default(false),
   approvedAt: timestamp("approved_at"),
   approvedBy: varchar("approved_by"),
+  rejectedAt: timestamp("rejected_at"),
+  rejectedBy: varchar("rejected_by"),
 });
 
 export const properties = pgTable("properties", {
@@ -34,6 +37,9 @@ export const properties = pgTable("properties", {
   price: integer("price").notNull(),
   averageRating: integer("average_rating").default(0),
   reviewCount: integer("review_count").default(0),
+  category: text("category").notNull(),
+  bedrooms: integer("bedrooms").default(1),
+  bathrooms: integer("bathrooms").default(1),
 });
 
 export const insertUserSchema = createInsertSchema(users).pick({
@@ -63,11 +69,12 @@ export type Property = typeof properties.$inferSelect;
 // Filter schemas for API
 export const reviewFiltersSchema = z.object({
   property: z.string().optional(),
+  propertyCategory: z.string().optional(),
   rating: z.string().optional(),
   categories: z.array(z.string()).optional(),
   startDate: z.string().optional(),
   endDate: z.string().optional(),
-  status: z.enum(['all', 'approved', 'pending']).optional(),
+  status: z.enum(['all', 'approved', 'pending', 'rejected']).optional(),
   channel: z.string().optional(),
   type: z.string().optional(),
   search: z.string().optional(),

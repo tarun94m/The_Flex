@@ -451,10 +451,19 @@ export function ReviewsTable({
                     </TableCell>
                     <TableCell>
                       <Badge 
-                        variant={review.approved ? "default" : "secondary"}
+                        variant={
+                          review.approved ? "default" : 
+                          review.rejected ? "destructive" : 
+                          "secondary"
+                        }
+                        className={
+                          review.approved ? "bg-green-100 text-green-800" : 
+                          review.rejected ? "bg-red-100 text-red-800" : 
+                          "bg-gray-100 text-gray-800"
+                        }
                         data-testid={`review-status-${review.id}`}
                       >
-                        {review.approved ? "Approved" : "Pending"}
+                        {review.approved ? "Approved" : review.rejected ? "Rejected" : "Pending"}
                       </Badge>
                     </TableCell>
                     <TableCell>
@@ -467,7 +476,7 @@ export function ReviewsTable({
                         >
                           <Eye className="h-4 w-4 text-primary" />
                         </Button>
-                        {!review.approved && (
+                        {!review.approved && !review.rejected && (
                           <>
                             <Button
                               variant="ghost"
@@ -488,6 +497,18 @@ export function ReviewsTable({
                               <X className="h-4 w-4 text-red-600" />
                             </Button>
                           </>
+                        )}
+                        {review.rejected && (
+                          <Button
+                            variant="ghost"
+                            size="sm"
+                            onClick={() => approveMutation.mutate(review.id)}
+                            disabled={approveMutation.isPending}
+                            data-testid={`button-approve-${review.id}`}
+                            title="Approve this rejected review"
+                          >
+                            <Check className="h-4 w-4 text-green-600" />
+                          </Button>
                         )}
                       </div>
                     </TableCell>

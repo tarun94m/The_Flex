@@ -39,22 +39,12 @@ export function Navigation() {
                   Properties
                 </span>
               </Link>
-              <span className="text-gray-500 hover:text-gray-700 px-1 pb-4 text-sm cursor-pointer">
-                Analytics
-              </span>
             </nav>
           </div>
           <div className="flex items-center space-x-4">
             <Button variant="ghost" size="sm" data-testid="button-notifications">
               <Bell className="h-4 w-4 text-gray-400 hover:text-gray-500" />
             </Button>
-            <div className="flex items-center space-x-2">
-              <Avatar className="h-8 w-8">
-                <AvatarImage src="https://images.unsplash.com/photo-1472099645785-5658abf4ff4e?ixlib=rb-1.2.1&ixid=eyJhcHBfaWQiOjEyMDd9&auto=format&fit=facearea&facepad=2&w=256&h=256&q=80" />
-                <AvatarFallback>SC</AvatarFallback>
-              </Avatar>
-              <span className="text-sm font-medium text-gray-700">Sarah Chen</span>
-            </div>
           </div>
         </div>
       </div>
