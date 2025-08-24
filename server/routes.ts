@@ -144,10 +144,24 @@ export async function registerRoutes(app: Express): Promise<Server> {
   // Get all reviews with filtering
   app.get("/api/reviews", async (req, res) => {
     try {
-      const filters = reviewFiltersSchema.parse(req.query);
+      // Transform query parameters to handle arrays and proper types
+      const rawQuery = req.query;
+      const transformedQuery: any = { ...rawQuery };
+      
+      // Handle categories array parameter
+      if (rawQuery.categories) {
+        if (typeof rawQuery.categories === 'string') {
+          transformedQuery.categories = rawQuery.categories.split(',').filter(Boolean);
+        } else if (Array.isArray(rawQuery.categories)) {
+          transformedQuery.categories = rawQuery.categories;
+        }
+      }
+      
+      const filters = reviewFiltersSchema.parse(transformedQuery);
       const reviews = await storage.getReviews(filters);
       res.json(reviews);
     } catch (error: any) {
+      console.error("Filter validation error:", error.message, "Query:", req.query);
       res.status(400).json({ message: "Invalid filter parameters", error: error.message });
     }
   });
